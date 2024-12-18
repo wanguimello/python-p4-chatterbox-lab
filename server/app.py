@@ -1,7 +1,6 @@
 from flask import Flask, request, make_response, jsonify
 from flask_cors import CORS
 from flask_migrate import Migrate
-
 from models import db, Message
 
 app = Flask(__name__)
@@ -17,7 +16,8 @@ db.init_app(app)
 @app.route('/')
 def index():
     return 'Hello, World!'
-@app.route('/messages' , methods=['GET'])
+
+@app.route('/messages', methods=['GET'])
 def messages():
     messages = Message.query.order_by(Message.created_at).all()
 
@@ -25,7 +25,10 @@ def messages():
 
 @app.route('/messages/<int:id>')
 def messages_by_id(id):
-    message = Message.query.filter_by(id=id).first()
+    # Use session.get() instead of query.get()
+    message = db.session.get(Message, id)  # Fix: using session.get() instead
+    if message is None:
+        return jsonify({"error": "Message not found"}), 404
 
     return jsonify(message.to_dict())
 
@@ -40,14 +43,22 @@ def create_message():
 @app.route('/messages/<int:id>', methods=['PATCH'])
 def update_message(id):
     data = request.get_json()
-    message = Message.query.get_or_404(id)
+    # Use session.get() instead of query.get_or_404()
+    message = db.session.get(Message, id)  # Fix: using session.get() instead
+    if message is None:
+        return jsonify({"error": "Message not found"}), 404
+
     message.body = data.get('body', message.body)
     db.session.commit()
     return jsonify(message.to_dict())
 
 @app.route('/messages/<int:id>', methods=['DELETE'])
 def delete_message(id):
-    message = Message.query.get_or_404(id)
+    # Use session.get() instead of query.get_or_404()
+    message = db.session.get(Message, id)  # Fix: using session.get() instead
+    if message is None:
+        return jsonify({"error": "Message not found"}), 404
+
     db.session.delete(message)
     db.session.commit()
     return '', 204
