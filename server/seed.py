@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from random import choice as rc
-
 from faker import Faker
 
 from app import app
@@ -9,26 +8,36 @@ from models import db, Message
 
 fake = Faker()
 
-usernames = [fake.first_name() for i in range(4)]
-if "Duane" not in usernames:
-    usernames.append("Duane")
+usernames = [fake.first_name() for _ in range(4)]
+if "Liza" not in usernames:
+    usernames.append("Liza")
+
 
 def make_messages():
-
-    Message.query.delete()
-    
-    messages = []
-
-    for i in range(20):
-        message = Message(
-            body=fake.sentence(),
-            username=rc(usernames),
-        )
-        messages.append(message)
-
-    db.session.add_all(messages)
-    db.session.commit()        
-
-if __name__ == '__main__':
+    """Seed the database with fake data for testing."""
     with app.app_context():
-        make_messages()
+        # Clear existing messages
+        Message.query.delete()
+
+        # Generate 20 fake messages
+        messages = [
+            Message(
+                body=fake.sentence(),
+                username=rc(usernames),
+            )
+            for _ in range(20)
+        ]
+
+        # Add sample test message
+        test_message = Message(body="Hello 👋", username="Liza")
+        messages.append(test_message)
+
+        # Commit to the database
+        db.session.add_all(messages)
+        db.session.commit()
+
+        print(f"Seeded {len(messages)} messages.")
+
+
+if __name__ == "__main__":
+    make_messages()
