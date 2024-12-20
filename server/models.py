@@ -19,4 +19,5 @@ class Message(db.Model, SerializerMixin):
     )  # Timestamp of last update
 
     def __repr__(self):
-        return f"<Message {self.id}, {self.body}, {self.username}>"
+        # This is useful for debugging; consider removing or modifying for production
+        return f"<Message {self.id}, {self.username}>"
